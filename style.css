@@ -1,0 +1,17 @@
+body {
+  background-color: #000;
+}
+
+.clock {
+  margin: 0 auto;
+  text-align: center;
+}
+
+ul {
+  padding: 0;
+}
+
+li {
+  list-style: none;
+  display: inline-block;
+}
