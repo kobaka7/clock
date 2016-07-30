@@ -1,33 +1,3 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="style.css">
-<title>clock</title>
-</head>
-<body>
-<div class="clock">
-    <ul>
-        <li><img src="img/dot1.jpg" alt="数字" name="p0"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p1"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p1"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p3"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p4"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p5"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p6"></li>
-        <li><img src="img/dot1.jpg" alt="数字" name="p7"></li>
-    </ul>
-    <button class="strat-btn">スタート</button>
-    <button class="stop-btn">ストップ</button>
-    <button class="strat-btn2">スタート2</button>
-    <button class="stop-btn2">ストップ2</button>
-    <button class="strat-btn3">スタート3</button>
-    <button class="stop-btn3">ストップ3</button>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
-<script type="text/javascript">
-
 var clockEl = $("img");
 var switchingDateId = 0;
 var dotCnt = 0; //ドット点滅用
@@ -37,6 +7,8 @@ var dotId = 0;
 var timeId = 0;
 var orderId = 0;
 var randomId = 0;
+var countupId = 0;
+var countupEventId = 0;
 var nowNum0 = 0;
 var nowNum1 = 0;
 var nowNum2 = 0;
@@ -55,21 +27,30 @@ var randomTotalNum5 = 0;
 var randomTotalNum6 = 0;
 var randomTotalNum7 = 0;
 
+setEvent();
+
+function setEvent(){
+    clearTimeout(countupId);
+    clearTimeout(countupEventId);
+    changeDot();
+    showTime();
+    switchingDate();
+}
 //------------------------------------ ドットと日付と時間 ---------------------------------------
 
+// ドット表示
 function changeDot(){
     clockEl.eq(2).attr("src","img/dot" + dotCnt + ".jpg");
     clockEl.eq(5).attr("src","img/dot" + dotCnt + ".jpg");
     if(dotCnt < 1){
         dotCnt++;
-    }
-    else{
+    } else{
         dotCnt = 0;
     }
     dotId = setTimeout(changeDot, 1000);
 }
-changeDot(); // ドット表示
 
+// 時間表示
 function showTime(){
     var data   = new Date();
     var hour   = data.getHours();
@@ -90,7 +71,6 @@ function showTime(){
     clockEl.eq(7).attr("src", "img/" + sec2 + ".jpg");
     timeId = setTimeout(showTime, 1000);
 }
-showTime(); // 時間表示
 
 function showToday(){
     var data   = new Date();
@@ -113,7 +93,7 @@ function showToday(){
 }
 
 //------------------------------------ 時間と日付切り替え ---------------------------------------
-
+// 時間と日付入れ替え
 function switchingDate(){
     var data   = new Date();
     switchingDateId = setTimeout(function(){
@@ -130,12 +110,13 @@ function switchingDate(){
         },4000);
     },1000*10);
 }
-switchingDate(); // 時間と日付入れ替え
-
 //------------------------------------ 順番表示イベント ---------------------------------------
 
 // スタートボタンを押したら
 $(".strat-btn").on("click",function(){
+    showOrderEvent();
+});
+function showOrderEvent(){
     clearTimeout(orderId);
     clearTimeout(switchingDateId);
     clearTimeout(timeId);
@@ -144,46 +125,54 @@ $(".strat-btn").on("click",function(){
     eqCnt = 0;
     numCnt = 0;
     orderEvent(); //順番表示イベント開始
-    stopBtn(); //ストップボタンoff解除
 
     function orderEvent(){
         orderId = setTimeout(orderEvent, 50); //0.05秒おきにeq++
       　clockEl.eq(eqCnt).attr("src", "img/" + numCnt + ".jpg");
 
-        //eqCntが8になったらnumCnt++してeqCntを0に戻す。
+        // eqCntが8になったらnumCnt++してeqCntを0に戻す。
         eqCnt++;
       　if (eqCnt >= 8) {
             numCnt++;
         　　eqCnt = 0;
       　}
 
-        //numCntが8になったらイベントを停止する。
+        // numCntが8になったらイベントを停止する。
         if (numCnt > 9) {
-        　　clearTimeout(orderId);
-            changeDot();
-            showTime();
-            switchingDate();
+            stopOrderEvent();
+            function stopOrderEvent(){
+                clearTimeout(orderId);
+                clockEl.eq(0).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(1).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(2).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(3).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(4).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(5).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(6).attr("src", "img/" + 9 + ".jpg");
+                clockEl.eq(7).attr("src", "img/" + 9 + ".jpg");
+            }
+            // --秒後に次のイベント開始
+            StopOrderId = setTimeout(showAllNone, 1000);
       　}
-      console.log("eq " + eqCnt);
-    　console.log("num " + numCnt);
-    } //orderEvent
-}); //click
+    }
+}
 
-// ストップボタンを押したら
-function stopBtn(){
-    $(".stop-btn").on("click",function(){
-    clearTimeout(orderId);
-    changeDot();
-    showTime();
-    switchingDate();
-    $(".stop-btn").off(); //連打禁止
-});
+function showAllNone(){
+    clockEl.eq(0).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(1).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(2).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(3).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(4).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(5).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(6).attr("src", "img/" + "dot1" + ".jpg");
+    clockEl.eq(7).attr("src", "img/" + "dot1" + ".jpg");
+    // --秒後に次のイベント開始
+    StopOrderId = setTimeout(showRandomEvent, 1000);
 }
 
 //------------------------------------ ランダムイベント ---------------------------------------
 
-// スタートボタンを押したら
-$(".strat-btn2").on("click",function(){
+function showRandomEvent(){
     clearTimeout(randomId);
     clearTimeout(switchingDateId);
     clearTimeout(timeId);
@@ -245,24 +234,27 @@ $(".strat-btn2").on("click",function(){
         clockEl.eq(5).attr("src", "img/" + randomNum5 + ".jpg");
         clockEl.eq(6).attr("src", "img/" + randomNum6 + ".jpg");
         clockEl.eq(7).attr("src", "img/" + randomNum7 + ".jpg");
-
-    　  console.log("num" + randomNum0);
     }
-});
+    randomEventId = setTimeout(showAllZero, 3000);
+}
 
-// ストップボタンを押したら
-$(".stop-btn2").on("click",function(){
+function showAllZero(){
     clearTimeout(randomId);
-    changeDot();
-    showTime();
-    switchingDate();
-    $(".stop-btn2").off(); //連打禁止
-});
+    clockEl.eq(0).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(1).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(2).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(3).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(4).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(5).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(6).attr("src", "img/" + 0 + ".jpg");
+    clockEl.eq(7).attr("src", "img/" + 0 + ".jpg");
+    // --秒後に次のイベント開始
+    StopOrderId = setTimeout(showcountupEvent, 2000);
+}
 
-//------------------------------------ カウントアップ ---------------------------------------
+//------------------------------------ 乱数を取得しカウントアップする ---------------------------------------
 
-// スタートボタンを押したら
-$(".strat-btn3").on("click",function(){
+function showcountupEvent(){
     clearTimeout(switchingDateId);
     clearTimeout(timeId);
     clearTimeout(dotId);
@@ -299,52 +291,33 @@ $(".strat-btn3").on("click",function(){
     randomTotalNum0 = (randomTotalNum - (randomTotalNum % 10000000)) / 10000000
     console.log(randomTotalNum0); // 8桁目
 
-    var randomTotalNumArray =
-    [randomTotalNum0,
+    var randomTotalNumArray = [ // 取得した乱数を一桁ずつ配列にする
+    randomTotalNum0,
     randomTotalNum1,
     randomTotalNum2,
     randomTotalNum3,
     randomTotalNum4,
     randomTotalNum5,
     randomTotalNum6,
-    randomTotalNum7]
-
+    randomTotalNum7
+    ]
 
     function countupEvent(){
         countupId = setTimeout(countupEvent, 50); //0.05秒おきにnumCnt++
-        //numCntが9になったらeqCnt++してnumCntを0に戻す。
         clockEl.eq(eqCnt).attr("src", "img/" + numCnt + ".jpg");
         numCnt++;
+        //numCntが9になったら
       　if (numCnt > 9) {
-            // clearTimeout(countupId);
+            clearTimeout(countupId);　// numCnt止める
+            clockEl.eq(eqCnt).attr("src", "img/" + randomTotalNumArray[eqCnt] + ".jpg");　//乱数表示
         　　numCnt = 0;
             eqCnt++;
+            countupEvent();　//eqをひとつずらしてもう一度呼び出す
       　}
       　if (eqCnt > 8) {
             clearTimeout(countupId);
-      　}
-      　
+            eqCnt = 0;
+      　}  　
     } //countupEvent
-    // clockEl.eq(0).attr("src", "img/" + randomTotalNum0 + ".jpg");
-    // clockEl.eq(1).attr("src", "img/" + randomTotalNum1 + ".jpg");
-    // clockEl.eq(2).attr("src", "img/" + randomTotalNum2 + ".jpg");
-    // clockEl.eq(3).attr("src", "img/" + randomTotalNum3 + ".jpg");
-    // clockEl.eq(4).attr("src", "img/" + randomTotalNum4 + ".jpg");
-    // clockEl.eq(5).attr("src", "img/" + randomTotalNum5 + ".jpg");
-    // clockEl.eq(6).attr("src", "img/" + randomTotalNum6 + ".jpg");
-    // clockEl.eq(7).attr("src", "img/" + randomTotalNum7 + ".jpg");
-
-
-}); //click
-
-// ストップボタンを押したら
-$(".stop-btn3").on("click",function(){
-    // changeDot();
-    // showTime();
-    // switchingDate();
-    $(".stop-btn3").off(); //連打禁止
-});
-
-</script>
-</body>
-</html>
+    countupEventId = setTimeout(setEvent, 6000);
+}
